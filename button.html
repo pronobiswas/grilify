@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --green: #0ae448;
+            --black: #0e100f;
+            --white: #fffce1;
+            --lt: #abff84;
+            --grey: #191919;
+            --s75: #bbbaa6;
+            --s50: #7c7c6f;
+            --s25: #42433d;
+            --grad-macha: linear-gradient(114.41deg, #0ae448 20.74%, #abff84 65.5%);
+            --grad-orange: linear-gradient(111.45deg, #ff8709 19.42%, #f7bdf8 73.08%);
+        }
+
+        body {
+            font-family: Mori, sans-serif;
+            background: var(--black);
+            color: var(--s75);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px 16px;
+        }
+
+        .header {
+            text-align: center;
+            max-width: 520px;
+        }
+
+        .header h1 {
+            color: var(--white);
+            font-weight: 400;
+            font-size: clamp(1.2rem, 3vw, 1.7rem);
+        }
+
+        .header p {
+            color: var(--s50);
+            margin-top: 5px;
+            max-width: 48ch;
+            margin-inline: auto;
+        }
+
+        code {
+            font-family: Fraktion Mono, monospace;
+            font-size: 0.78em;
+            background: var(--grey);
+            color: var(--white);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .demo-area {
+            display: flex;
+            gap: 4rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .demo-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 40%;
+            position: relative;
+        }
+
+        .demo-label {
+            font-family: Fraktion Mono, monospace;
+            font-size: 0.68rem;
+            color: var(--s50);
+            text-align: center;
+        }
+
+        .demo-label b {
+            color: var(--white);
+            font-weight: 400;
+        }
+
+        .code-peek {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid var(--s25);
+            background: var(--grey);
+            color: var(--s50);
+            font-family: Fraktion Mono, monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            margin-top: 4px;
+        }
+
+        .code-peek:hover {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(14, 16, 15, 0.8);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--grey);
+            border: 1px solid var(--s25);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--s50);
+            cursor: pointer;
+            font-family: Fraktion Mono, monospace;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            border: none;
+        }
+
+        .modal-close:hover {
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .modal pre {
+            margin: 0;
+        }
+
+        .modal code[class*="language-"] {
+            font-size: 0.7rem;
+            line-height: 1;
+        }
+
+        code[class*="language-"],
+        pre[class*="language-"] {
+            max-width: none;
+        }
+
+        .mag-zone {
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 1px dashed var(--s25);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .mag-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            border-radius: 99px;
+            border: none;
+            cursor: pointer;
+            font-family: Mori, sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--black);
+            overflow: hidden;
+            will-change: transform;
+        }
+
+        .mag-btn .bg {
+            position: absolute;
+            inset: 0;
+            border-radius: 99px;
+            z-index: 0;
+        }
+
+        .mag-btn .label {
+            position: relative;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .mag-btn.macha .bg {
+            background: var(--grad-macha);
+        }
+
+        .mag-btn.orange .bg {
+            background: var(--grad-orange);
+        }
+
+        .mag-btn.summer .bg {
+            background: var(--gradient-summer-fair);
+        }
+
+        .mag-btn.danger .bg {
+            background: var(--gradient-lipstick);
+        }
+
+
+
+        .code-box {
+            width: 100%;
+            max-width: 520px;
+            background: var(--grey);
+            border: 1px solid var(--s25);
+            border-radius: 8px;
+            padding: 12px 16px;
+            overflow-x: auto;
+        }
+
+        .code-box pre {
+            margin: 0;
+        }
+
+        .code-box code {
+            font-size: 0.8rem;
+            white-space: pre;
+            background: none;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .details {
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .details p {
+            font-family: Fraktion Mono, monospace;
+            font-size: 0.62rem;
+            color: var(--s50);
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Dynamic tweens <br /><code>overwrite: true</code> vs <code>"auto"</code></h1>
+        <p></p>
+    </div>
+
+    <div class="demo-area">
+        <div class="demo-col">
+            <div class="demo-label"><b>magnetic only</b><br>no wiggle, overwrite: true</div>
+            <div class="mag-zone" data-mode="true" data-wiggle="false">
+                <button class="mag-btn summer" id="btnPlain">
+                    <div class="bg"></div>
+                    <span class="label">dynamic</span>
+                </button>
+            </div>
+            <button class="code-peek" data-code="2">&lt;/&gt;</button>
+        </div>
+        <div class="demo-col">
+            <div class="demo-label"><b>overwrite: false</b><br>tweens may conflict</div>
+            <div class="mag-zone" data-mode="false" data-wiggle="false">
+                <button class="mag-btn danger" id="btnFalse">
+                    <div class="bg"></div>
+                    <span class="label">false</span>
+                </button>
+            </div>
+            <button class="code-peek" data-code="3">&lt;/&gt;</button>
+        </div>
+        <div class="demo-col">
+            <div class="demo-label"><b>overwrite: true</b><br>kills ALL other tweens on target</div>
+            <div class="mag-zone" data-mode="true" data-wiggle="true">
+                <button class="mag-btn orange" id="btnTrue">
+                    <div class="bg"></div>
+                    <span class="label">true</span>
+                </button>
+            </div>
+            <button class="code-peek" data-code="0">&lt;/&gt;</button>
+        </div>
+        <div class="demo-col">
+            <div class="demo-label"><b>overwrite: "auto"</b><br>kills only conflicting props</div>
+            <div class="mag-zone" data-mode="auto" data-wiggle="true">
+                <button class="mag-btn macha" id="btnAuto">
+                    <div class="bg"></div>
+                    <span class="label">auto</span>
+                </button>
+            </div>
+            <button class="code-peek" data-code="1">&lt;/&gt;</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">×</button>
+            <pre><code class="language-js" id="modalCode"></code></pre>
+        </div>
+    </div>
+    <!-- <a target="_blank" href="https://gsap.com/resources/conflict/">learn more</a>
+ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+<!-- CustomWiggle requires CustomEase -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomWiggle.min.js"></script>
+ <script>
+    
+gsap.registerPlugin(CustomEase, CustomWiggle);
+ 
+/* ── code modal ── */
+var modalSnippets = [
+  // 0 — overwrite: true + wiggle
+  '// wiggle loop\ngsap.to(btn, {\n  rotation: 12,\n  duration: 1.5,\n  repeat: -1,\n  ease: "wiggle({wiggles:8, type:easeOut})"\n});\n\n// magnetic pull — overwrite: true kills the wiggle!\nzone.addEventListener("mousemove", (e) => {\n  const rect = zone.getBoundingClientRect();\n  const x = gsap.utils.mapRange(rect.left, rect.right,-rect.width / 2, rect.width / 2, e.clientX);\n  const y = gsap.utils.mapRange(rect.top, rect.bottom, -rect.height / 2, rect.height / 2, e.clientY);\n\n  gsap.to(btn, {\n    x: x * strength,\n    y: y * strength,\n    duration: 0.4,\n    ease: "power2.out",\n    overwrite: true\n  });\n});\n\nzone.addEventListener("mouseleave", () => {\n  gsap.to(btn, { x: 0, y: 0,\n    duration: 0.7,\n    ease: "elastic.out(1, 0.4)",\n    overwrite: true\n  });\n});',
+ 
+  // 1 — overwrite: "auto" + wiggle
+  '// wiggle loop\ngsap.to(btn, {\n  rotation: 12,\n  duration: 1.5,\n  repeat: -1,\n  ease: "wiggle({wiggles:8, type:easeOut})"\n});\n\n// magnetic pull — overwrite: "auto" keeps the wiggle!\nzone.addEventListener("mousemove", (e) => {\n  const rect = zone.getBoundingClientRect();\n  const x = gsap.utils.mapRange(rect.left, rect.right,-rect.width / 2, rect.width / 2, e.clientX);\n  const y = gsap.utils.mapRange(rect.top, rect.bottom, -rect.height / 2, rect.height / 2, e.clientY);\n\n  gsap.to(btn, {\n    x: x * strength,\n    y: y * strength,\n    duration: 0.4,\n    ease: "power2.out",\n    overwrite: "auto"\n  });\n});\n\nzone.addEventListener("mouseleave", () => {\n  gsap.to(btn, { x: 0, y: 0,\n    duration: 0.7,\n    ease: "elastic.out(1, 0.4)",\n    overwrite: "auto"\n  });\n  // wiggle is still running\n});',
+ 
+  // 2 — no wiggle, overwrite: true
+  '// no wiggle — simply overwriting x and y. \nzone.addEventListener("mousemove", (e) => {\n  const rect = zone.getBoundingClientRect();\n  const x = gsap.utils.mapRange(rect.left, rect.right,-rect.width / 2, rect.width / 2, e.clientX);\n  const y = gsap.utils.mapRange(rect.top, rect.bottom,-rect.height / 2, rect.height / 2, e.clientY);\n\n  gsap.to(btn, {\n    x: x * strength,\n    y: y * strength,\n    duration: 0.4,\n    ease: "power2.out",\n    overwrite: true\n  });\n});\n\nzone.addEventListener("mouseleave", () => {\n  gsap.to(btn, { \n    x: 0, \n    y: 0,\n    duration: 0.7,\n    ease: "elastic.out(1, 0.4)",\n    overwrite: true\n  });\n});',
+ 
+  // 3 — overwrite: false (long move, snappy leave)
+  '// magnetic pull — LONG duration on mousemove\nzone.addEventListener("mousemove", (e) => {\n  const rect = zone.getBoundingClientRect();\n  const x = gsap.utils.mapRange(rect.left, rect.right,-rect.width / 2, rect.width / 2, e.clientX);\n  const y = gsap.utils.mapRange(rect.top, rect.bottom, -rect.height / 2, rect.height / 2, e.clientY);\n\n  gsap.to(btn, {\n    x: x * strength,\n    y: y * strength,\n    duration: 1.5,        // slow follow\n    ease: "power2.out",\n    overwrite: false       // default — won\'t kill anything\n  });\n});\n\n// SHORT snappy mouseleave — finishes fast,\n// but the old long mousemove tween is still going\n// and reclaims x/y → visible snap-back!\nzone.addEventListener("mouseleave", () => {\n  gsap.to(btn, { x: 0, y: 0,\n    duration: 0.15,\n    ease: "power2.out",\n    overwrite: false\n  });\n});'
+];
+ 
+var overlay = document.getElementById("modalOverlay");
+var modalCode = document.getElementById("modalCode");
+ 
+document.querySelectorAll(".code-peek").forEach(function(btn) {
+  btn.addEventListener("click", function(e) {
+    e.stopPropagation();
+    var idx = parseInt(btn.getAttribute("data-code"));
+    modalCode.textContent = modalSnippets[idx];
+    if (window.Prism) Prism.highlightElement(modalCode);
+    overlay.classList.add("open");
+  });
+});
+ 
+document.getElementById("modalClose").addEventListener("click", function() {
+  overlay.classList.remove("open");
+});
+ 
+overlay.addEventListener("click", function(e) {
+  if (e.target === overlay) overlay.classList.remove("open");
+});
+ 
+/* ── magnetic buttons ── */
+var zones = document.querySelectorAll(".mag-zone");
+var strength = 0.4;
+var labelStrength = 0.24;
+ 
+zones.forEach(function(zone) {
+  var btn = zone.querySelector(".mag-btn");
+  var label = btn.querySelector(".label");
+  var mode = zone.getAttribute("data-mode");
+  var overwrite = mode === "true" ? true : mode === "false" ? false : "auto";
+  var isFalse = mode === "false";
+  var hasWiggle = zone.getAttribute("data-wiggle") === "true";
+ 
+  // attention-seeking wiggle (if enabled)
+  if (hasWiggle) {
+    gsap.to(btn, {
+      rotation: 12,
+      duration: 1.5,
+      repeat: -1,
+      ease: "wiggle({wiggles:8,type:easeOut})"
+    });
+  }
+ 
+  zone.addEventListener("mousemove", function(e) {
+    var rect = zone.getBoundingClientRect();
+    var mapX = gsap.utils.mapRange(rect.left, rect.right, -rect.width / 2, rect.width / 2, e.clientX);
+    var mapY = gsap.utils.mapRange(rect.top, rect.bottom, -rect.height / 2, rect.height / 2, e.clientY);
+ 
+    gsap.to(btn, {
+      x: mapX * strength,
+      y: mapY * strength,
+      duration: isFalse ? 1.5 : 0.4,
+      ease: "power2.out",
+      overwrite: overwrite
+    });
+ 
+    gsap.to(label, {
+      x: mapX * labelStrength,
+      y: mapY * labelStrength,
+      duration: isFalse ? 1.5 : 0.4,
+      ease: "power2.out",
+      overwrite: true
+    });
+  });
+ 
+  zone.addEventListener("mouseleave", function() {
+    gsap.to(btn, {
+      x: 0, y: 0,
+      duration: isFalse ? 0.5 : 0.7,
+      ease: isFalse ? "power2.out" : "elastic.out(1,0.4)",
+      overwrite: overwrite
+    });
+ 
+    gsap.to(label, {
+      x: 0, y: 0,
+      duration: isFalse ? 0.5 : 0.7,
+      ease: isFalse ? "power2.out" : "elastic.out(1,0.4)",
+      overwrite: true
+    });
+  });
+});
+ </script>
+</body>
+
+</html>

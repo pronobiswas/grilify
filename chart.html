@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #chartSection {
+            width: 100%;
+            height: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #chartSection .chartsectionWrapper {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+        }
+
+        #chartSection .chartsectionWrapper canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #chartSection .chartsectionWrapper .barAndLineChartWrapper {
+            width: 100%;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            gap: 50px;
+        }
+
+        #chartSection .chartsectionWrapper .barAndLineChartWrapper .barChartWrapper {
+            width: 100%;
+            height: 100%;
+        }
+
+        #chartSection .chartsectionWrapper .barAndLineChartWrapper .lineChartWrapper {
+            width: 100%;
+            height: 100%;
+        }
+
+        #engagement_chart {}
+
+        #growth_chart {}
+
+        #chartSection .chartsectionWrapper .doughnutChartWrapper {
+            width: 100%;
+            height: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #doughnutChart {
+            max-width: 400px;
+            max-height: fit-content;
+            aspect-ratio: 1/1;
+        }
+
+        @media (min-width: 768px) {
+            #chartSection .chartsectionWrapper {
+                flex-direction: row;
+            }
+
+            #chartSection .chartsectionWrapper .barAndLineChartWrapper {
+                width: 100%;
+                height: 100%;
+            }
+
+            #chartSection .chartsectionWrapper .doughnutChartWrapper {
+                width: 100%;
+                height: 100%;
+            }
+
+            #doughnutChart {
+                max-width: 100%;
+                max-height: fit-content;
+                aspect-ratio: 1/1;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <section id="chartSection">
+        <div class="chartsectionWrapper">
+
+            <div class="barAndLineChartWrapper">
+                <div class="barChartWrapper">
+                    <canvas id="engagement_chart"></canvas>
+                </div>
+                <div class="lineChartWrapper">
+                    <canvas id="growth_chart"></canvas>
+                </div>
+            </div>
+
+            <div class="doughnutChartWrapper">
+                <canvas id="doughnutChart"></canvas>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ====script===== -->
+    <!-- ====script===== -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- ====script===== -->
+    <!-- ====script===== -->
+    <script>
+        const ctx1 = document.getElementById('engagement_chart').getContext('2d');
+        // const engagementChart = new Chart(ctx1, {
+        //     type: 'bar',
+        //     data: {
+        //         labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+        //         datasets: [{
+        //             label: 'Engagement',
+        //             data: [1000, 5000, 32000, 54000, 100000, 76000],
+        //             backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        //             borderColor: 'rgba(255, 99, 132, 1)',
+        //             borderWidth: 1
+        //         }]
+        //     },
+        //     options: {
+        //         scales: {
+        //             y: {
+        //                 beginAtZero: true,
+        //                 ticks: {
+        //                     callback: function (value) {
+        //                         if (value >= 1000000) return (value / 1000000) + 'm';
+        //                         if (value >= 1000) return (value / 1000) + 'k';
+        //                         return value;
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // });
+        // const ctx1 = document.getElementById('engagement_chart').getContext('2d');
+        const engagementChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'Engagement Reach',
+                    data: [8000, 5000, 32000, 54000, 100000, 76000],
+                    backgroundColor: 'rgba(0, 0, 25, 0.9)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 10000, // controls spacing between ticks
+                            callback: function (value) {
+                                if (value >= 1000000) return (value / 1000000) + 'm';
+                                if (value >= 1000) return (value / 1000) + 'k';
+                                return value;
+                            },
+                            color: '#333',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Reach',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Months',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return 'Reach: ' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const ctx2 = document.getElementById('growth_chart').getContext('2d');
+        const growthChart = new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'Growth',
+                    data: [3, 10, 5, 2, 20, 30],
+                    fill: false,
+                    borderColor: 'rgba(0, 0, 84, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const ctx3 = document.getElementById('doughnutChart').getContext('2d');
+        const doughnutChart = new Chart(ctx3, {
+            type: 'radar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'Image Generation',
+                        data: [20000, 15000, 18000, 20000, 25000, 22000, 27000, 30000, 28000, 26000, 24000, 31000],
+                        fill: true,
+                        backgroundColor: 'rgba(0, 0, 96, 0.2)',
+                        borderColor: 'rgb(0, 0, 84)',
+                        pointBackgroundColor: 'rgb(0, 0, 51)'
+                    },
+                    {
+                        label: 'Video Generation',
+                        data: [27000, 35000, 24000, 32000, 34000, 31000, 46000, 33000, 42000, 41000, 48000, 35000],
+                        fill: true,
+                        backgroundColor: 'rgba(0, 0, 132, 0.2)',
+                        borderColor: 'rgb(0, 0, 132)',
+                        pointBackgroundColor: 'rgb(0, 0, 132)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        grid: {
+                            color: 'rgba(0, 0, 84, 0.3)'
+                        },
+                        angleLines: {
+                            color: 'rgba(0, 0, 84, 0.3)'
+                        },
+                        pointLabels: {
+                            color: 'rgba(0, 0, 84, 0.3)',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    title: { display: true, text: 'Monthly Generation Scores (Image vs Video)' }
+                }
+            }
+        });
+
+
+    </script>
+    <!-- ====script===== -->
+    <!-- ====script===== -->
+    <!-- ====script===== -->
+</body>
+
+</html>

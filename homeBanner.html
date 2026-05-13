@@ -1,160 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Deep Space Banner</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: black;
-        }
-
-        canvas {
-            display: block;
-        }
-
-        #banner {
-            width: 100%;
-            height: 100vh;
-            position: relative;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Deep Space Banner</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #c88eff;
+    }
+    canvas {
+      display: block;
+    }
+    #banner2 {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+    }
+  </style>
 </head>
-
 <body>
-    <div id="banner2"></div>
+  <div id="banner2"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
-    <script>
-        const banner2 = document.getElementById('banner2');
+  <script>
+  (function() {
+    const banner2 = document.getElementById('banner2');
+
+    // =========================
+    // 🎥 Orthographic Camera (no perspective distortion)
+    // =========================
+    const aspect = window.innerWidth / window.innerHeight;
+    const cameraSize = 1000; 
+    const camera = new THREE.OrthographicCamera(
+      -cameraSize * aspect,
+      cameraSize * aspect,
+      cameraSize,
+      -cameraSize,
+      0.1,
+      3000
+    );
+    camera.position.z = 1000;
+
+    // =========================
+    // 🎬 Scene & Renderer
+    // =========================
+    const scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setClearColor(new THREE.Color(0x000000), 0); 
+    // renderer.setClearColor(new THREE.Color(0x2233ff), 0.2);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    banner2.appendChild(renderer.domElement);
+
+    // =========================
+    // ⭐ Starfield
+    // =========================
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 2000;
+    const positions = [];
+    for (let i = 0; i < starCount; i++) {
+      positions.push((Math.random() - 0.5) * 4000);
+      positions.push((Math.random() - 0.5) * 4000);
+      positions.push((Math.random() - 0.5) * 4000);
+    }
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    const starMaterial = new THREE.PointsMaterial({ color: 0xc88eff, size: 1 });
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene.add(stars);
+
+    // =========================
+    // 🌌 Nebula Sphere
+    // =========================
+    const nebulaGeometry = new THREE.SphereGeometry(250, 32, 32);
+    const nebulaMaterial = new THREE.MeshBasicMaterial({
+      color: 0x2233ff,
+      transparent: true,
+      opacity: 0.9
+    });
+    const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+    nebula.position.set( -500 , -500, 0);
+    scene.add(nebula);
+    // Wireframe overlay
+    const wireframe = new THREE.LineSegments(
+      new THREE.WireframeGeometry(nebulaGeometry),
+      new THREE.LineBasicMaterial({ color: 0x88aaff, transparent: true, opacity: 0.6 })
+    );
+    nebula.add(wireframe);
 
 
-        // Scene
-        const scene = new THREE.Scene();
+    // ====================== 
+    // cylinder  effect 
+    // ====================== 
+    // const cylindergeometry = new THREE.CylinderGeometry( 50, 50, 200, 32 );
+    // const cylindermaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+    // const cylinder = new THREE.Mesh( cylindergeometry, cylindermaterial );
+    // scene.add( cylinder );
 
-        // Camera
-        const camera = new THREE.PerspectiveCamera(
-            75,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            1000
-        );
-        camera.position.z = 500;
+    // ================== 
+    // torusKnot effect
+    // ================== 
+ 
 
-        // Renderer
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        banner2.appendChild(renderer.domElement);
+    // =========================
+    // 🪐 Torus with Reflection
+    // =========================
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load(
+      'https://images.unsplash.com/photo-1763594393372-d0c9619d6609?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+    );
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    texture.encoding = THREE.sRGBEncoding;
 
-        // =========================
-        // ⭐ Starfield
-        // =========================
-        const starGeometry = new THREE.BufferGeometry();
-        const starCount = 2000;
-        const positions = [];
+    const torusGeometry = new THREE.TorusGeometry(300, 100, 50, 200);
+    const torusMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      envMap: texture,
+      metalness: 0.5,
+      roughness: 0.2
+    });
+    const torus = new THREE.Mesh(torusGeometry, torusMaterial);
 
-        for (let i = 0; i < starCount; i++) {
-            positions.push((Math.random() - 0.5) * 1000);
-            positions.push((Math.random() - 0.5) * 1000);
-            positions.push((Math.random() - 0.5) * 1000);
-        }
+    // Move torus to top-left corner (visible now)
+    torus.position.set(window.innerWidth - 300, window.innerHeight - 500, 0);
+    scene.add(torus);
 
-        starGeometry.setAttribute(
-            'position',
-            new THREE.Float32BufferAttribute(positions, 3)
-        );
+    // =========================
+    // 💡 Lights
+    // =========================
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
 
-        const starMaterial = new THREE.PointsMaterial({
-            color: 0xffffff,
-            size: 1
-        });
+    const pointLight = new THREE.PointLight(0xffffff, 1.5, 1200);
+    pointLight.position.set(300, 300, 500);
+    scene.add(pointLight);
 
-        const stars = new THREE.Points(starGeometry, starMaterial);
-        scene.add(stars);
+    // =========================
+    // 🎞️ Animation
+    // =========================
+    function animate() {
+      requestAnimationFrame(animate);
+      stars.rotation.y += 0.0005;
+      nebula.rotation.y += 0.003;
+      nebula.rotation.x += 0.001;
+      torus.rotation.y += 0.001;
+      torus.rotation.x += 0.003;
+      renderer.render(scene, camera);
+    }
+    animate();
 
-        // =========================
-        // 🌌 Nebula
-        // =========================
-        const nebulaGeometry = new THREE.SphereGeometry(50, 32, 32);
-        const nebulaMaterial = new THREE.MeshBasicMaterial({
-            color: 0x2233ff,
-            transparent: true,
-            opacity: 0.4
-        });
-
-        const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
-        scene.add(nebula);
-
-        // =========================
-        // 🪐 Torus with Texture + Metal
-        // =========================
-        const loader = new THREE.TextureLoader();
-
-        // const texture = loader.load('./pic.jpg');
-        const texture = loader.load('https://plus.unsplash.com/premium_photo-1681550097108-187abe10d445?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
-
-        // Improve texture tiling
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        texture.encoding = THREE.sRGBEncoding;
-        // scene.background = texture;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(20, 20);
-
-        const torusGeometry = new THREE.TorusGeometry(100, 30, 32, 100);
-
-        const torusMaterial = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            envMap: texture,
-            metalness: 1,
-            roughness: 0.2
-        });
-
-        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
-        scene.add(torus);
-
-        // =========================
-        // 💡 Lights (IMPORTANT)
-        // =========================
-
-        // Soft ambient light
-        // const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-        // scene.add(ambientLight);
-
-        // Strong point light
-        const pointLight = new THREE.PointLight(0xffffff, 2, 800);
-        pointLight.position.set(100, 100, 100);
-        // scene.add(pointLight);
-
-        // =========================
-        // 🎬 Animation
-        // =========================
-        function animate() {
-            requestAnimationFrame(animate);
-
-            stars.rotation.y += 0.0005;
-            nebula.rotation.y += 0.0003;
-
-            torus.rotation.y += 0.01;
-            torus.rotation.x += 0.003;
-
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-        // =========================
-        // 📱 Resize Fix
-        // =========================
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+    // =========================
+    // 📱 Resize Handling
+    // =========================
+    window.addEventListener('resize', () => {
+      const aspect = window.innerWidth / window.innerHeight;
+      camera.left = -cameraSize * aspect;
+      camera.right = cameraSize * aspect;
+      camera.top = cameraSize;
+      camera.bottom = -cameraSize;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  })();
+  </script>
 </body>
-
 </html>
