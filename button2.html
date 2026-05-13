@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      /* Add your styles here */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --green: #0ae448;
+        --black: #0e100f;
+        --white: #fffce1;
+        --lt: #abff84;
+        --grey: #191919;
+        --s75: #bbbaa6;
+        --s50: #7c7c6f;
+        --s25: #42433d;
+        --grad-macha: linear-gradient(114.41deg, #0ae448 20.74%, #abff84 65.5%);
+        --grad-orange: linear-gradient(
+          111.45deg,
+          #ff8709 19.42%,
+          #f7bdf8 73.08%
+        );
+      }
+
+      body {
+        font-family: Mori, sans-serif;
+        background: var(--black);
+        color: var(--s75);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+        padding: 40px 16px;
+      }
+      .demo-area {
+        display: flex;
+        gap: 4rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .demo-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 40%;
+        position: relative;
+      }
+      .mag-zone {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px dashed var(--s25);
+        position: relative;
+        cursor: pointer;
+      }
+      .mag-btn {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 32px;
+        border-radius: 99px;
+        border: none;
+        cursor: pointer;
+        font-family: Mori, sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--black);
+        overflow: hidden;
+        will-change: transform;
+      }
+      .mag-btn.orange {
+        background: var(--grad-orange);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-area">
+      <div class="demo-col">
+        <div class="demo-label">
+          <b>overwrite: true</b><br />kills ALL other tweens on target
+        </div>
+        <div class="mag-zone" data-mode="true" data-wiggle="true">
+          <button class="mag-btn orange" id="btnTrue">
+            <div class="bg"></div>
+            <span class="label">true</span>
+          </button>
+        </div>
+        <button class="code-peek" data-code="0">&lt;/&gt;</button>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomEase.min.js"></script>
+    <!-- CustomWiggle requires CustomEase -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/CustomWiggle.min.js"></script>
+    <script>
+      gsap.registerPlugin(CustomEase, CustomWiggle);
+      var zone = document.querySelector(".mag-zone");
+      var btn = zone.querySelector(".mag-btn");
+      var mode = zone.getAttribute("data-mode");
+      var hasWiggle = zone.getAttribute("data-wiggle") === "true";
+      var strength = 0.4;
+      var labelStrength = 0.24;
+      console.log(zone, btn, mode, hasWiggle);
+      var label = btn.querySelector(".label");
+      var overwrite =
+        mode === "true" ? true : mode === "false" ? false : "auto";
+      var isFalse = mode === "false";
+      // attention-seeking wiggle (if enabled)
+      if (hasWiggle) {
+        gsap.to(btn, {
+          rotation: 12,
+          duration: 1.5,
+          repeat: -1,
+          ease: "wiggle({wiggles:8,type:easeOut})",
+        });
+      }
+      zone.addEventListener("mousemove", function (e) {
+        var rect = zone.getBoundingClientRect();
+        var mapX = gsap.utils.mapRange(
+          rect.left,
+          rect.right,
+          -rect.width / 2,
+          rect.width / 2,
+          e.clientX,
+        );
+        var mapY = gsap.utils.mapRange(
+          rect.top,
+          rect.bottom,
+          -rect.height / 2,
+          rect.height / 2,
+          e.clientY,
+        );
+
+        gsap.to(btn, {
+          x: mapX * strength,
+          y: mapY * strength,
+          duration: isFalse ? 1.5 : 0.4,
+          ease: "power2.out",
+          overwrite: overwrite,
+        });
+
+        gsap.to(label, {
+          x: mapX * labelStrength,
+          y: mapY * labelStrength,
+          duration: isFalse ? 1.5 : 0.4,
+          ease: "power2.out",
+          overwrite: true,
+        });
+      });
+      zone.addEventListener("mouseleave", function () {
+        gsap.to(btn, {
+          x: 0,
+          y: 0,
+          duration: isFalse ? 0.5 : 0.7,
+          ease: isFalse ? "power2.out" : "elastic.out(1,0.4)",
+          overwrite: overwrite,
+        });
+
+        gsap.to(label, {
+          x: 0,
+          y: 0,
+          duration: isFalse ? 0.5 : 0.7,
+          ease: isFalse ? "power2.out" : "elastic.out(1,0.4)",
+          overwrite: true,
+        });
+      });
+    </script>
+  </body>
+</html>
