@@ -2,32 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Wave Rings Animation</title>
+  <title>Wave Rings Animation with Scroll</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #000; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      /* overflow-x: hidden; */
+    }
+    body { background: #000; }
     canvas { display: block; }
+
+    #banner {
+      width: 100%;
+      height: 90vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #banner aside {
+      width: 100%;
+      height: 100%;
+      background-color: aliceblue;
+    }
+    #middleSection {
+      width: 100%;
+      height: 100vh;
+      background-color: rgb(104, 181, 248);
+    }
+    #footerSection {
+      width: 100%;
+      height: 100vh;
+      background-color: aliceblue;
+    }
   </style>
 </head>
 <body>
+  <section id="banner">
+    <aside></aside>
+    <aside id="ringWrapper"></aside>
+  </section>
+  <section id="middleSection"></section>
+  <footer id="footerSection"></footer>
+
+  <!-- Three.js -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
   <script>
+    const ringWrapper = document.getElementById('ringWrapper');
+    const width = ringWrapper.clientWidth;
+    const height = ringWrapper.clientHeight;
+
+    // GSAP ScrollTrigger rotation
+    gsap.registerPlugin(ScrollTrigger);
+
     // Scene setup
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      75, window.innerWidth / window.innerHeight, 0.1, 1000
-    );
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     camera.position.z = 10;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    renderer.setSize(width, height);
+    ringWrapper.appendChild(renderer.domElement);
 
     // Create multiple rings
     const rings = [];
     const ringCount = 25;
-    const geometry = new THREE.RingGeometry(0.5, 0.56, 124);
-    const baseColor = new THREE.Color(0x00aaff);
+    const geometry = new THREE.RingGeometry(0.5, 0.52, 124);
 
     for (let i = 0; i < ringCount; i++) {
       const material = new THREE.MeshBasicMaterial({
@@ -36,9 +79,9 @@
         opacity: 0.8
       });
       const ring = new THREE.Mesh(geometry, material);
-      ring.rotateX(Math.PI / 1.5);
+      // ring.rotation.x = Math.PI / 1.5;
       scene.add(ring);
-      rings.push({ mesh: ring, offset: i * 0.2 });
+      rings.push({ mesh: ring, offset: i * 0.08 });
     }
 
     // Animation loop
@@ -47,11 +90,12 @@
       const t = time / 10000;
 
       rings.forEach((ring, i) => {
-        const wave = (t + ring.offset) % 2; 
-        const scale = 1 + wave * 6; 
+        const wave = (t + ring.offset) % 2;
+        const scale = 1 + wave * 6;
         ring.mesh.scale.set(scale, scale, 1);
-        ring.mesh.material.opacity = 1 - wave; 
-        ring.mesh.rotateY(0.003);
+        // ring.mesh.rotation.y = t * 2 + i * 0.5;
+        ring.mesh.position.y = Math.sin(t * 20 + i * 0.5) * 0.5;
+        ring.mesh.material.opacity = 1 - wave;
       });
 
       renderer.render(scene, camera);
@@ -60,9 +104,29 @@
 
     // Handle resize
     window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      const newWidth = ringWrapper.clientWidth;
+      const newHeight = ringWrapper.clientHeight;
+      camera.aspect = newWidth / newHeight;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(newWidth, newHeight);
+    });
+
+    
+
+    gsap.to(scene.rotation, {
+      z: Math.PI * 1.5,
+      x: Math.PI * 5.5,
+      duration: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: "#ringWrapper",
+        start: "top top",
+        end: "+=500",
+        pin:true,
+        // pinspacing: true,
+        scrub: true,
+        markers: true 
+      }
     });
   </script>
 </body>
